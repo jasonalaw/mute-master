@@ -1,0 +1,63 @@
+#! /usr/bin/env python3
+
+from argparse import ArgumentParser
+from subprocess import call, check_call
+
+from os import path
+
+from shortcut import set_shortcut, clear_shortcut
+
+mic_index = "2"
+mute_binding = '<Primary><Shift>KP_Subtract'
+unmute_binding = '<Primary><Shift>KP_Add'
+
+parser = ArgumentParser(description='mute')
+
+ON = 'on'
+OFF = 'off'
+SETUP = 'setup'
+RETIRE = 'retire'
+
+parser.add_argument('action', choices=[ON, OFF, SETUP, RETIRE])
+
+
+def set_mute(enabled: bool):
+
+    dir_path = path.dirname(path.realpath(__file__))
+    icon_path = path.realpath(path.join(dir_path, '..', 'icons'))
+
+    print(dir_path)
+
+    if enabled:
+        flag = "1"
+        msg = "muted"
+        icon = path.join(icon_path, 'muted.png')
+    else:
+        flag = "0"
+        msg = "Mic is HOT"
+        icon = path.join(icon_path, 'microphone.png')
+
+    try:
+        check_call(["pactl", "set-source-mute", mic_index, flag])
+    except:
+        msg = "ERROR setting mic"
+        raise
+    finally:
+        check_call(["notify-send",
+                    '-i', icon,
+                    '-t', str(1),
+                    msg])
+
+args = parser.parse_args()
+if args.action == ON:
+    set_mute(True)
+elif args.action == OFF:
+    set_mute(False)
+elif args.action == SETUP:
+    set_shortcut(name='mute', command='mute on', binding=mute_binding)
+    set_shortcut(name='unmute', command='mute off', binding=unmute_binding)
+elif args.action == RETIRE:
+    clear_shortcut(name='mute')
+    clear_shortcut(name='unmute')
+else:
+    raise RuntimeError('unexpected action: {}'.format(args.action))

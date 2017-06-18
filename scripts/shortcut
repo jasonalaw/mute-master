@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+from argparse import ArgumentParser
+
+from shortcut import list_all, clear_shortcut
+from shortcut import set_shortcut
+
+if __name__ == "__main__":
+    parser = ArgumentParser(description='mute')
+    parser.add_argument('action', choices=['list', 'set', 'clear'])
+    parser.add_argument("-v", "--verbose",
+                        help="increase output verbosity",
+                        action="store_true")
+    parser.add_argument('-n', '--name', help="name of shortcut", action="store")
+    parser.add_argument('-c', '--command', help="command for shortcut", action="store")
+    parser.add_argument('-b', '--binding', help="key binding for shortcut", action="store")
+    parser.add_argument('-i', '--index', help="index to be cleared", action="store")
+
+    args = parser.parse_args()
+
+    if args.action == 'list':
+        list_all(verbose=args.verbose)
+    elif args.action == 'set':
+        i = set_shortcut(name=args.name,
+                         command=args.command,
+                         binding=args.binding,
+                         verbose=args.verbose)
+        print("custom shortcut {} added".format(i))
+    elif args.action == 'clear':
+        clear_shortcut(index=args.index,
+                       verbose=args.verbose)
+        print("cleared shortcut {}".format(args.index))
+    else:
+        raise RuntimeError('unknown action: {}'.format(args.action))
